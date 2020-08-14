@@ -1,0 +1,115 @@
+Slurm nextflow.config
+----------------------
+- Set executor.name to "slurm"
+- Set process.executor to "slurm"
+- To set default options (cpu, mem, time), just set 
+	process.clusterOptions to the desired arguments as a command 
+	to slurm in the command line
+- With process labels, you can give different
+  settings to each label (e.g different clusters mem/time/cpu usage)
+
+
+Nextflow Scripting
+======================
+Basics
+------
+- To start nextflow, do 
+	./nextflow run script.nf [params]
+- To RESUME the previous workflow due to an error or pause
+  	(will save a lot of time in long workflows)
+	./nextflow run script.nf -resume [params]
+- May be specific to me, but if you ever lock your workflow, 
+    and can't start/resume it, remove the lock file you get in the 
+  	error message and try again
+
+
+Parameters
+----------
+- Declare and set default values for script parameters with 
+  	param.name = default_value in your script
+- Give parameters in cmd line using (--name value)
+
+
+Processes
+---------
+(Labels)
+- To give a process a label defined in nextflow.config file
+	label "name" (in quotes)
+- To specify specific mem, time, cpu options
+	ex. time {"1:00:00"} 
+	will cap the process running time to 1 hour
+	***Note*** Doing so has LOWER priority than the setting 
+	in the config file
+
+(Scripting)
+- Surround your process script in triple quotes like this """
+- Each process is ran in a separate folder within the work directory,
+	so be careful when giving the path to the file you are referring to
+- Default language is bash, to change the language, must declare 
+	in first line of script
+- Use ${var_name} to refer to Nextflow variables in bash script
+- Use \${var_name} to refer to Bash variables in your script
+- To apply Nextflow operators on variables from your input, 
+	do so either before your process script or while you refer 
+	to your variable in your script. 
+	For example use ${x.join(" ")} in your bash script to combine 
+	all elements of x delimited with a space. 
+
+(I/O)
+- Processes can optionally have an input or output option
+- To view actual output from a process (such as running echo "hi"),
+	capture the stdout output like such:
+		output:
+		stdout var_name
+	and then view the output by having 
+		var_name.view()
+- For inital pipeline input, create a channel from your desired directory
+	(if processing files) 
+- For intermediate pipeline input, just specify the corresponding 
+	output channel from the previous process
+	***Note*** Each channel can only be the output of one process and
+		the input of another process. 
+		- To feed into multiple processes, create multiple output
+			channels containing the same files
+- Since all processes starts at the same time, the only way 
+	(that I discovered) to force one process to run before/after another
+	is to create dummy channels that gives a dummy value and so creating 
+	a "fake" pipeline for nextflow to follow
+
+
+Channels
+--------
+- Main method to communicate data from one process to another
+- Created in two ways. Either using Channel methods or by using the 
+	"into" keyword when specifying the output of a process
+- Use the .collect() method to group all files (or object) in a channel 
+	the together and process them all at once
+- Use the .flatten() method to emit one file (or object) at a time
+
+
+Other
+-----
+- The map method is a great way to transform your data into the desired 
+	format
+- Cleaning a directory before running a certain command may be helpful if 
+	the command expects a certain file but does not find it or making 
+	sure the file is actually passed into the channel correctly. 
+- publishDir is useful when you want to have a folder of symlinks to the 
+	files produced within your process after it has successfully completed
+- storeDir however, is similar to publishDir, but acts as a permanant 
+	cache of your process. If this is used, the process will first check 
+	if the output files are already in the directory specified. If it is,
+	then the process is skipped, otherwise, the process will execute. 
+- When trying to debug on an error caused within a process, try to go 
+	into that corresponding process work folder and check the different
+	.command files. 
+- The .command.log and .command.err are quite useful to
+	see the execution trace. 
+- The .command.sh file shows the exact command 
+	ran and make all the variables are substituted correctly. 
+- To create a channel that emits files in pairs according to some pattern,
+	use Channel.fromFilePairs("path_to_dir/pattern_of_files")
+	The output of that channel will be a tuple where the first element is
+	the largest matching group of the two file names and the second 
+	element being a list of the files that matched. (by default it looks
+	for pairs of files matching the glob pattern)
