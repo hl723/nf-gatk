@@ -7,10 +7,9 @@ An Illumina sequencing pipeline using BWA, SAMTools, Picard, and GATK within Nex
    1. advice.txt - file containing information that would have been very useful to me when developing this pipeline. Hopefully this can benefit future interns in some way. 
    2. nextflow - the nextflow executable.
    3. nextflow.config - configuration file for running workflows on grace/farnam clusters via Slurm.
-   4. old_work - directory containing all intermediate files and final pipeline output for the sfBacteria dataset..
-   5. sequence.nf - main Nextflow script.
-   6. sfBacteria - dataset containing the raw reads (fastq files) and the reference genome. 
-   7. sfBacteria_copy - just a copy of the dataset.
+   4. sequence.nf - main Nextflow script.
+   5. sfBacteria - dataset containing the raw reads (fastq files) and the reference genome. 
+      - (not located here)
 
 ## Usage:
 
